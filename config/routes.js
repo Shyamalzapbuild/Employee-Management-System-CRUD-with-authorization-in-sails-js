@@ -31,6 +31,7 @@ module.exports.routes = {
 
 //Mentor
   'POST /login/manager':'ManagerController.managerLogin',
+  'PUT /manager/update/trainee/:id':'ManagerController.updateEmplyee',
   'GET /employees':'ManagerController.find',
 
 //Employee

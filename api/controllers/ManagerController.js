@@ -38,14 +38,34 @@ module.exports = {
     },
     updateEmplyee: async (req,res)=>{
         try{
-            const {name,phoneNo,imagePath} = req.allParams();
-            if(!params.id){
+            const {name,phoneNo} = req.allParams();
+            if(!req.params.id){
                 return res.badRequest({err:'id is not valid'})
             }
-            const updateEmployee = await Employee.update({
-                name,phoneNo,imagePath
-            }).fetch();
-            return res.ok(updateEmployee);
+            req.file('imagePath').upload({
+                maxBytes:10000000,
+               dirname:'../../assets/images',
+                saveAs:`employees-${Date.now()}.png`
+            },async(error,uploadedFiles)=>{
+                if(uploadedFiles){
+                    if(uploadedFiles[0].type==='image/png' || uploadedFiles[0].type ==='image/jpg' || uploadedFiles[0].type ==='image/jpeg'){
+                        imagePaths = uploadedFiles[0].fd;
+                        const updateEmployee = await Employee.update({id:req.params.id}).set({
+                            name,phoneNo,imagePath:imagePaths
+                        });
+                        return res.ok(updateEmployee);
+                    }
+                    else{
+                        return res.badRequest({err:"only images with jpeg,jpg and png files are supported"});
+                    }
+               }
+               if(error) {
+                   return res.serverError(error.message);
+                }
+               if(uploadedFiles[0].length===0) {
+                   return res.badRequest({err:"no files was uploaded"});
+                }
+          })
         }catch(err){
             return res.serverError(err);
         }
